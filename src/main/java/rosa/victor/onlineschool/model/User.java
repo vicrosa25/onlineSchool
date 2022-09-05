@@ -17,14 +17,14 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import rosa.victor.onlineschool.annotation.FieldsValueMatch;
 import rosa.victor.onlineschool.annotation.PasswordValidator;
 
 
-@Data
-@EqualsAndHashCode(callSuper=false)
+@Getter
+@Setter
 @Entity
 @FieldsValueMatch.List({
   @FieldsValueMatch(field = "pwd", fieldMatch = "confirmPwd", message = "Password do not match"),
@@ -75,5 +75,4 @@ public class User extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY, optional = true)
   @JoinColumn(name = "class_id", referencedColumnName = "classId", nullable = true)
   private OnlineClass onlineClass;
-
 }

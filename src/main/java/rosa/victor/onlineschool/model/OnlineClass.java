@@ -15,13 +15,13 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "class")
-@EqualsAndHashCode(callSuper = true)
 public class OnlineClass extends BaseEntity {
 
   @Id

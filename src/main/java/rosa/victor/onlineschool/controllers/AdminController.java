@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -102,24 +102,24 @@ public class AdminController {
     onlineClass.getStudents().add(student);
     onlineClassRepository.save(onlineClass);
 
-    modelAndView.setViewName("redirect:/admin/displayStudents?classId" + onlineClass.getClassId());
+    modelAndView.setViewName("redirect:/admin/displayStudents?classId=" + onlineClass.getClassId());
     return modelAndView;
   }
 
-  @DeleteMapping("/deleteStudent")
-  public ModelAndView deleteStudent(Model model, @RequestParam int studentId, HttpSession session) {
+  @GetMapping("/deleteStudent")
+  public ModelAndView deleteStudent(Model model, @RequestParam int userId, HttpSession session) {
     OnlineClass onlineClass = (OnlineClass) session.getAttribute("onlineClass");
-    Optional<User> student = userRepository.findById(studentId);
+    Optional<User> student = userRepository.findById(userId);
     student.get().setOnlineClass(null);
     onlineClass.getStudents().remove(student.get());
-    onlineClassRepository.save(onlineClass);
-    session.setAttribute("onlineClass", onlineClass);
+    OnlineClass onlineClassSaved = onlineClassRepository.save(onlineClass);
+    session.setAttribute("onlineClass", onlineClassSaved);
 
     ModelAndView modelAndView = new ModelAndView("redirect:/admin/displayStudents?classId=" + onlineClass.getClassId());
 
     return modelAndView;
   }
-
+ 
 
 
 }
