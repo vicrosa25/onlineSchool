@@ -15,13 +15,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import rosa.victor.onlineschool.model.Course;
 import rosa.victor.onlineschool.model.OnlineClass;
 import rosa.victor.onlineschool.model.User;
+import rosa.victor.onlineschool.repository.CourseRepositoy;
 import rosa.victor.onlineschool.repository.OnlineClassRepository;
 import rosa.victor.onlineschool.repository.UserRepository;
 
 
 import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @Controller
@@ -33,6 +36,11 @@ public class AdminController {
 
   @Autowired
   private OnlineClassRepository onlineClassRepository;
+
+  @Autowired
+  private CourseRepositoy courseRepositoy;
+
+
 
   @RequestMapping("/displayClasses")
   public ModelAndView displayClasses(Model model) {
@@ -119,6 +127,89 @@ public class AdminController {
 
     return modelAndView;
   }
+
+
+  @GetMapping("/displayCourses")
+  public ModelAndView displayCourses() {
+
+    List<Course> courses = courseRepositoy.findAll();
+    ModelAndView modelAndView = new ModelAndView("courses_secure.html");
+    modelAndView.addObject("courses", courses);
+    modelAndView.addObject("course", new Course());
+
+    return modelAndView;
+
+  }
+
+  @PostMapping(value="addNewCourse")
+  public ModelAndView addNewCourse(@ModelAttribute("course") Course course) {
+      
+    courseRepositoy.save(course);
+    ModelAndView modelAndView = new ModelAndView("redirect:/admin/displayCourses");
+
+    return modelAndView;
+  }
+
+
+  @GetMapping(value="viewStudents")
+  public ModelAndView viewStudents(@RequestParam int id, HttpSession session,
+                                   @RequestParam(required = false) String error) {
+
+    String errorMessage = null;
+    ModelAndView modelAndView = new ModelAndView("course_students.html");
+    Optional<Course> course = courseRepositoy.findById(id);
+    modelAndView.addObject("course", course.get());
+    modelAndView.addObject("user", new User());
+    session.setAttribute("course", course.get());
+
+    if (error != null) {
+      errorMessage = "Invalid Email entered";
+      modelAndView.addObject("errorMessage", errorMessage);
+    }
+
+    return modelAndView;
+  }
+
+
+  @PostMapping(value = "addStudentToCourse")
+  public ModelAndView addStudentToCourse(@ModelAttribute("user") User user, HttpSession session) {
+    ModelAndView modelAndView = new ModelAndView();
+    
+    
+    Course course = (Course) session.getAttribute("course");
+    User userEntity = userRepository.getByEmail(user.getEmail());
+    
+    if(userEntity == null || !(userEntity.getUserId() > 0)) {
+      modelAndView.setViewName("redirect:/admin/viewStudents?id=" + course.getCourseId() + "&error=true");
+      return modelAndView;
+    }
+        
+    course.getUsers().add(userEntity);
+    userEntity.getCourses().add(course);
+    userRepository.save(userEntity);
+
+    session.setAttribute("course", course);
+
+    modelAndView.setViewName("redirect:/admin/viewStudents?id=" + course.getCourseId());
+    return modelAndView;
+  }
+  
+  @GetMapping("deleteStudentFromCourse")
+  public ModelAndView deleteStudentFromCourse(@RequestParam int userId, HttpSession session) {
+    
+    Course course = (Course) session.getAttribute("course");
+    Optional<User> user = userRepository.findById(userId);
+
+    course.getUsers().remove(user.get());
+    user.get().getCourses().remove(course);
+    userRepository.save(user.get());
+
+    ModelAndView modelAndView = new ModelAndView("redirect:/admin/viewStudents?id=" + course.getCourseId());
+    return modelAndView;
+  
+  }
+  
+
  
 
 
