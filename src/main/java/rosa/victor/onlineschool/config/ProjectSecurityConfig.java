@@ -34,6 +34,7 @@ public class ProjectSecurityConfig {
                                   .mvcMatchers("/admin/**").hasRole("ADMIN")
                                   .mvcMatchers("/displayMessages").hasRole("ADMIN")
                                   .mvcMatchers("/public/**").permitAll()
+                                  .mvcMatchers("/student/**").hasRole("STUDENT")
         );
         http.formLogin()
             .loginPage("/login")
